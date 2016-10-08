@@ -42,27 +42,29 @@ $(document).ready(function(){
     $.getJSON("{{ url_for('energy_data', meterId=3044076134) }}", function(json) {
        //success - data loaded, now use plot:
        var plotarea = $("#energy");
-       $.plot(
-       //plot area
-       plotarea,
-       //plot data
-         [
-            { data: json.consumption, 
-              lines: { show: true, fill: true },
-              label: "Consumption"
-            }
-        ],
-       // plot settings
-       {
-                                grid: {hoverable: true,
-                                       clickable: true,
-                                       markings: weekendAreas},
-                                yaxis: {label: "Events"},
-                                xaxis: {mode: "time",
-                                        minTickSize: [1, "day"]
-                                        }
-                                })
 
+       // Create plot object
+       var plot = $.plot(
+                //plot area
+                plotarea,
+                //plot data
+                [
+                    { data: json.consumption,
+                      lines: { show: true, fill: true },
+                      label: "Consumption"
+                    }
+                ],
+                // plot settings
+                {
+                    grid: {hoverable: true,
+                           clickable: true,
+                           markings: weekendAreas},
+                    yaxis: {label: "Events"},
+                    xaxis: {mode: "time",
+                            minTickSize: [1, "day"]
+                            }
+                }
+       );
     });
 
     function showTooltip(x, y, contents) {
