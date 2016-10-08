@@ -1,0 +1,67 @@
+{% set navigation_bar = [
+    ('/', 'index', 'Home'),
+    ('/usage/', 'usage', 'Usage'),
+    ('/about/', 'about', 'About')
+] -%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" crossorigin="anonymous">
+
+
+    <script src="https://use.fontawesome.com/6ef903e5fa.js"></script>
+    <!-- jQuery first, then Tether, then Bootstrap JS. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js" crossorigin="anonymous"></script>
+
+
+    {% block head %}
+    {% endblock head %}
+
+    <title>{% block title %}{% endblock title%}</title>
+</head>
+
+<body>
+<div class="container">
+
+<!-- Navbar -->
+<nav class="navbar navbar-fixed-top navbar-light bg-faded">
+  <a class="navbar-brand" href="{{ url_for('index') }}">EnergyUsage</a>
+  <ul class="nav navbar-nav">
+    {% for href, id, caption in navigation_bar %}
+    <li class="nav-item{% if id == active_page %} active{% endif %}">
+        <a class="nav-link" href="{{ href|e }}">{{ caption|e }} </a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+</div><!-- /container -->
+
+<div class="container">
+{% block container %}
+{% endblock container %}
+</div><!-- /container -->
+
+<div class="container">
+<hr>
+<footer>
+<p>&copy; A Guinane 2016</p>
+</footer>
+</div><!-- /container -->
+
+
+
+
+</body>
+</html>
+

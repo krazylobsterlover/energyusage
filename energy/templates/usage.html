@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default('usage') -%}
+{% block title %}Energy Usage{% endblock %}
+{% block container %}
+<h1 class="page-header">Usage</h1>
+<p>Charts and stuff.</p>
+<div class="chart-container">
+    <div id="energy" class="chart-placeholder" style="max-width: none; height: 400px;"></div>
+</div>
+
+<!-- Flot code - load json into chart div-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
+<script language="javascript" type="text/javascript">
+$(document).ready(function(){
+    $.getJSON("{{ url_for('energy_data', meterId=3044076134) }}", function(json) {
+       //success - data loaded, now use plot:
+       var plotarea = $("#energy");
+       $.plot(
+       //plot area
+       plotarea,
+       //plot data
+         [
+            { data: json.consumption, label: "Consumption" }
+        ],
+       // plot settings
+       {
+                                grid: {hoverable: true,
+                                       clickable: true},
+                                yaxis: {label: "Events"},
+                                xaxis: {mode: "time",
+                                        timeformat: "%H:%M",
+                                        minTickSize: [1, "hour"]
+                                        }
+                                })
+    });
+
+    function showTooltip(x, y, contents) {
+        $('<div id="tooltip">' + contents + '</div>').css( {
+            position: 'absolute',
+            display: 'none',
+            top: y + 5,
+            left: x + 5,
+            border: '1px solid #fdd',
+            padding: '2px',
+            'background-color': '#fee',
+            opacity: 0.80
+        }).appendTo("body").fadeIn(200);
+    }
+
+    var previousPoint = null;
+    $("#energy").bind("plothover", function (event, pos, item) {
+        $("#x").text(pos.x.toFixed(2));
+        $("#y").text(pos.y.toFixed(2));
+
+        if (item) {
+            if (previousPoint != item.dataIndex) {
+                previousPoint = item.dataIndex;
+
+                $("#tooltip").remove();
+                var x = item.datapoint[0].toFixed(2),
+                    y = item.datapoint[1].toFixed(2)
+                    d = new Date(x),
+                    DATE_FORMAT = "%H:%M",
+
+                    showTooltip(item.pageX, item.pageY,
+                            item.series.label + "s: " + y + "Wh");
+            }
+        }
+        else {
+            $("#tooltip").remove();
+            previousPoint = null;
+        }
+
+    });
+});
+</script>
+
+
+{% endblock container%}
