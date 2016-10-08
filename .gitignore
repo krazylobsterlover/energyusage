@@ -88,5 +88,7 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# PyCharm
+.idea*
 # Ignore meter data
 data/*.db

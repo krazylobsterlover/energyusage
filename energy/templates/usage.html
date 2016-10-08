@@ -11,8 +11,34 @@
 <!-- Flot code - load json into chart div-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.selection.min.js"></script>
 <script language="javascript" type="text/javascript">
 $(document).ready(function(){
+    function weekendAreas(axes) {
+
+            var markings = [],
+                d = new Date(axes.xaxis.min);
+
+            // go to the first Saturday
+
+            d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7))
+            d.setUTCSeconds(0);
+            d.setUTCMinutes(0);
+            d.setUTCHours(0);
+
+            var i = d.getTime();
+
+            // when we don't set yaxis, the rectangle automatically
+            // extends to infinity upwards and downwards
+
+            do {
+                markings.push({ xaxis: { from: i, to: i + 2 * 24 * 60 * 60 * 1000 } });
+                i += 7 * 24 * 60 * 60 * 1000;
+            } while (i < axes.xaxis.max);
+
+            return markings;
+        }
+
     $.getJSON("{{ url_for('energy_data', meterId=3044076134) }}", function(json) {
        //success - data loaded, now use plot:
        var plotarea = $("#energy");
@@ -21,18 +47,22 @@ $(document).ready(function(){
        plotarea,
        //plot data
          [
-            { data: json.consumption, label: "Consumption" }
+            { data: json.consumption, 
+              lines: { show: true, fill: true },
+              label: "Consumption"
+            }
         ],
        // plot settings
        {
                                 grid: {hoverable: true,
-                                       clickable: true},
+                                       clickable: true,
+                                       markings: weekendAreas},
                                 yaxis: {label: "Events"},
                                 xaxis: {mode: "time",
-                                        timeformat: "%H:%M",
-                                        minTickSize: [1, "hour"]
+                                        minTickSize: [1, "day"]
                                         }
                                 })
+
     });
 
     function showTooltip(x, y, contents) {
@@ -60,11 +90,8 @@ $(document).ready(function(){
                 $("#tooltip").remove();
                 var x = item.datapoint[0].toFixed(2),
                     y = item.datapoint[1].toFixed(2)
-                    d = new Date(x),
-                    DATE_FORMAT = "%H:%M",
-
                     showTooltip(item.pageX, item.pageY,
-                            item.series.label + "s: " + y + "Wh");
+                            item.series.label + ": " + y + "Wh");
             }
         }
         else {

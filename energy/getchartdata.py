@@ -4,7 +4,7 @@ import sqlite3
 import arrow
 
     
-def get_energy_chart_data(meterId, start_date="2016-09-01", end_date="2016-09-02"):
+def get_energy_chart_data(meterId, start_date="2016-09-01", end_date="2016-10-01"):
     """ Return json object for flot chart
     """
 
@@ -28,7 +28,6 @@ ORDER BY DATE_M ASC
     
     for row in data:
         dTime = arrow.get(row[0])
-        print(dTime.timetuple())
         ts = int(dTime.timestamp * 1000)
         chartdata['consumption'].append([ts,row[1]])
 
