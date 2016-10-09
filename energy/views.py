@@ -1,6 +1,6 @@
 from flask import render_template, url_for, jsonify, redirect, flash, request
 from app import app
-from models import get_energy_chart_data
+from models import get_energy_chart_data, get_data_range
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
@@ -15,6 +15,7 @@ def homepage():
 @app.route('/usage/<int:report_year>/<int:report_month>')
 def usage(report_year=None, report_month=None):
 
+    meter_id = 3044076134
     # Specify default month to report on
     if report_year is None or report_month is None:
         a = arrow.utcnow()
@@ -24,14 +25,22 @@ def usage(report_year=None, report_month=None):
 
     month_start = arrow.get(report_year, report_month, 1)
 
+    # Get the date range data exists for
+    first_record, last_record = get_data_range(meter_id)
+    first_record = arrow.get(first_record).replace(months=-1)
+    last_record = arrow.get(last_record)
+
     next_month = month_start.replace(months=+1)
-    if next_month >= arrow.utcnow():
+    if next_month >= last_record:
         next_month_data = False
     else:
         next_month_data = True
 
     prev_month = month_start.replace(months=-1)
-    prev_month_data = True
+    if prev_month <= first_record:
+        prev_month_data = False
+    else:
+        prev_month_data = True
 
     month_navigation = {'prev_year': prev_month.year,
                         'prev_month': prev_month.month,
@@ -41,7 +50,7 @@ def usage(report_year=None, report_month=None):
                         'next_enabled': next_month_data
                         }
 
-    return render_template('usage.html',
+    return render_template('usage.html', meter_id = meter_id,
                            report_year = report_year, report_month = report_month,
                            month_navigation = month_navigation,
                            month_desc = month_start.format('MMM YY'),
@@ -56,9 +65,9 @@ def about():
 
 
 @app.route('/energy_data/')
-@app.route('/energy_data/<meterId>.json', methods=['POST', 'GET'])
-def energy_data(meterId=3044076134):
-    if meterId is None:
+@app.route('/energy_data/<meter_id>.json', methods=['POST', 'GET'])
+def energy_data(meter_id=None):
+    if meter_id is None:
         return 'json chart api'
     else:
         params = request.args.to_dict()
@@ -66,7 +75,7 @@ def energy_data(meterId=3044076134):
             start_date = params['start_date']
         if params['end_date']:
             end_date = params['end_date']
-        flotData = get_energy_chart_data(meterId, start_date, end_date)
+        flotData = get_energy_chart_data(meter_id, start_date, end_date)
         return jsonify(flotData)
 
 

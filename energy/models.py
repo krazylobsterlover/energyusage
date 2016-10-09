@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy import MetaData, Table, Column, DateTime, Float, between
-from sqlalchemy.sql import select, text
+from sqlalchemy import MetaData, Table, Column, DateTime, Float, between, func
+from sqlalchemy.sql import select
 
 import arrow
 
@@ -10,14 +10,35 @@ meter_readings = Table('interval_readings', metadata,
     Column('ch1', Float, nullable=False),
 )
 
-def get_energy_chart_data(meterId, start_date="2016-09-01",
-                          end_date="2016-10-01"):
+def get_data_range(meter_id):
+    """ Get the minimum and maximum date ranges with data
+    """
+    engine = create_engine('sqlite:///../data/' + str(meter_id) + '.db',
+                           echo=True)
+    conn = engine.connect()
+    s = select([func.min(meter_readings.c.reading_date),
+               func.max(meter_readings.c.reading_date)
+               ])
+    data = conn.execute(s).fetchall()
+    return data[0]
+
+
+def get_energy_data(meter_id, start_date, end_date):
+    """ Get energy data for a meter
+    """
+    engine = create_engine('sqlite:///../data/' + str(meter_id) + '.db',
+                           echo=True)
+    conn = engine.connect()
+    s = select([meter_readings]).where(
+        between(meter_readings.c.reading_date, start_date, end_date))
+    data = conn.execute(s).fetchall()
+    return data
+
+
+def get_energy_chart_data(meter_id, start_date, end_date):
     """ Return json object for flot chart
     """
-    engine = create_engine('sqlite:///../data/'+ str(meterId) + '.db', echo=True)
-    conn = engine.connect()
-    s = select([meter_readings]).where(between(meter_readings.c.reading_date, start_date, end_date))
-    data = conn.execute(s).fetchall()
+    data = get_energy_data(meter_id, start_date, end_date)
 
     chartdata = {}
     chartdata['label'] = 'Energy Profile'

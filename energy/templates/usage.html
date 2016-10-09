@@ -46,7 +46,7 @@ $(document).ready(function(){
             return markings;
         }
 
-    $.getJSON("{{ url_for('energy_data', meterId=3044076134, start_date=start_date, end_date=end_date)|safe }}", function(json) {
+    $.getJSON("{{ url_for('energy_data', meter_id=meter_id, start_date=start_date, end_date=end_date)|safe }}", function(json) {
        //success - data loaded, now use plot:
        var plotarea = $("#energy");
 
