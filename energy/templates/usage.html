@@ -2,8 +2,15 @@
 {% set active_page = active_page|default('usage') -%}
 {% block title %}Energy Usage{% endblock %}
 {% block container %}
-<h1 class="page-header">Usage</h1>
-<p>Charts and stuff.</p>
+<h1 class="page-header">Energy Usage <small>{{month_desc}}</small></h1>
+
+<a class="btn btn-secondary {% if not month_navigation.prev_enabled %}disabled{% endif %}" href="{{url_for('usage', report_year=month_navigation.prev_year, report_month=month_navigation.prev_month) }}" role="button">
+    <i class="fa fa-arrow-left" aria-hidden="true"></i>
+</a>
+<a class="btn btn-secondary {% if not month_navigation.next_enabled %}disabled{% endif %}" href="{{url_for('usage', report_year=month_navigation.next_year, report_month=month_navigation.next_month) }}" role="button">
+    <i class="fa fa-arrow-right" aria-hidden="true"></i>
+</a>
+
 <div class="chart-container">
     <div id="energy" class="chart-placeholder" style="max-width: none; height: 400px;"></div>
 </div>
@@ -39,7 +46,7 @@ $(document).ready(function(){
             return markings;
         }
 
-    $.getJSON("{{ url_for('energy_data', meterId=3044076134) }}", function(json) {
+    $.getJSON("{{ url_for('energy_data', meterId=3044076134, start_date=start_date, end_date=end_date)|safe }}", function(json) {
        //success - data loaded, now use plot:
        var plotarea = $("#energy");
 
