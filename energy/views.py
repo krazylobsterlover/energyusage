@@ -1,6 +1,9 @@
-from flask import render_template, jsonify
+from flask import render_template, url_for, jsonify, redirect, flash
 from app import app
 from models import get_energy_chart_data
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired
 
 
 @app.route('/')
@@ -26,3 +29,17 @@ def energy_data(meterId=3044076134):
     else:
         flotData = get_energy_chart_data(meterId)
         return jsonify(flotData)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        flash(u'Sorry. User login is not yet supported ...')
+        return redirect(url_for('login'))
+    return render_template('login.html', form=form)
+
+
+class LoginForm(FlaskForm):
+    username = StringField('username', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
