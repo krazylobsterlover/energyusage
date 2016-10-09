@@ -1,4 +1,4 @@
-# config
+# Flask Config
 
 class Configuration(object):
     DEBUG = True

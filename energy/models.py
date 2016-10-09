@@ -1,4 +1,5 @@
-import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.sql import text
 import arrow
 
 
@@ -6,20 +7,18 @@ def get_energy_chart_data(meterId, start_date="2016-09-01",
                           end_date="2016-10-01"):
     """ Return json object for flot chart
     """
+    engine = create_engine('sqlite:///../data/'+ str(meterId) + '.db', echo=True)
+    conn = engine.connect()
 
-    conn = sqlite3.connect('../data/' + str(meterId) + '.db')
-    c = conn.cursor()
     query = """SELECT DATE_M, Ch1
-FROM INTERVAL_READINGS
-WHERE DATE_M >= DATE(?)
-AND DATE_M < DATE(?)
-ORDER BY DATE_M ASC
-"""
-    c.execute(query, [start_date, end_date])
-    header = [h[0] for h in c.description]
-    data = c.fetchall()
-    c.close()
-    conn.close()
+    FROM INTERVAL_READINGS
+    WHERE DATE_M >= DATE(:x)
+    AND DATE_M < DATE(:y)
+    ORDER BY DATE_M ASC
+    """
+
+    s = text(query)
+    data = conn.execute(s, x=start_date, y=end_date).fetchall()
 
     chartdata = {}
     chartdata['label'] = 'Energy Profile'
