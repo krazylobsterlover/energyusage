@@ -1,7 +1,14 @@
 from sqlalchemy import create_engine
-from sqlalchemy.sql import text
+from sqlalchemy import MetaData, Table, Column, DateTime, Float, between
+from sqlalchemy.sql import select, text
+
 import arrow
 
+metadata = MetaData()
+meter_readings = Table('interval_readings', metadata,
+    Column('reading_date', DateTime, primary_key=True),
+    Column('ch1', Float, nullable=False),
+)
 
 def get_energy_chart_data(meterId, start_date="2016-09-01",
                           end_date="2016-10-01"):
@@ -9,16 +16,8 @@ def get_energy_chart_data(meterId, start_date="2016-09-01",
     """
     engine = create_engine('sqlite:///../data/'+ str(meterId) + '.db', echo=True)
     conn = engine.connect()
-
-    query = """SELECT DATE_M, Ch1
-    FROM INTERVAL_READINGS
-    WHERE DATE_M >= DATE(:x)
-    AND DATE_M < DATE(:y)
-    ORDER BY DATE_M ASC
-    """
-
-    s = text(query)
-    data = conn.execute(s, x=start_date, y=end_date).fetchall()
+    s = select([meter_readings]).where(between(meter_readings.c.reading_date, start_date, end_date))
+    data = conn.execute(s).fetchall()
 
     chartdata = {}
     chartdata['label'] = 'Energy Profile'
