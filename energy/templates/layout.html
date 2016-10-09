@@ -1,5 +1,5 @@
 {% set navigation_bar = [
-    ('/', 'index', 'Home'),
+    ('/', 'homepage', 'Home'),
     ('/usage/', 'usage', 'Usage'),
     ('/about/', 'about', 'About')
 ] -%}
@@ -35,7 +35,7 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-fixed-top navbar-light bg-faded">
-  <a class="navbar-brand" href="{{ url_for('index') }}">
+  <a class="navbar-brand" href="{{ url_for('homepage') }}">
       <i class="fa fa-area-chart" aria-hidden="true"></i>
         EnergyUsage</a>
   <ul class="nav navbar-nav">

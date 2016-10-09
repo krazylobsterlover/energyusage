@@ -1,14 +1,13 @@
-import datetime
-import time
 import sqlite3
 import arrow
 
-    
-def get_energy_chart_data(meterId, start_date="2016-09-01", end_date="2016-10-01"):
+
+def get_energy_chart_data(meterId, start_date="2016-09-01",
+                          end_date="2016-10-01"):
     """ Return json object for flot chart
     """
 
-    conn = sqlite3.connect('../data/'+str(meterId)+'.db')
+    conn = sqlite3.connect('../data/' + str(meterId) + '.db')
     c = conn.cursor()
     query = """SELECT DATE_M, Ch1
 FROM INTERVAL_READINGS
@@ -25,10 +24,10 @@ ORDER BY DATE_M ASC
     chartdata = {}
     chartdata['label'] = 'Energy Profile'
     chartdata['consumption'] = []
-    
+
     for row in data:
         dTime = arrow.get(row[0])
         ts = int(dTime.timestamp * 1000)
-        chartdata['consumption'].append([ts,row[1]])
+        chartdata['consumption'].append([ts, row[1]])
 
-    return chartdata          
+    return chartdata
