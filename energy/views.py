@@ -1,14 +1,16 @@
 from flask import render_template, url_for, jsonify, redirect, flash, request
-from app import app
-from models import get_energy_chart_data, get_data_range
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
 import arrow
+from energy import app
+from .models import get_energy_chart_data, get_data_range
+
 
 @app.route('/')
 def homepage():
     return render_template('index.html')
+
 
 @app.route('/usage/')
 @app.route('/usage/<int:report_year>/')

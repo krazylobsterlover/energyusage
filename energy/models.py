@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData, Table, Column, DateTime, Float, between, func
 from sqlalchemy.sql import select
-
 import arrow
+
 
 metadata = MetaData()
 meter_readings = Table('interval_readings', metadata,
@@ -13,8 +13,8 @@ meter_readings = Table('interval_readings', metadata,
 def get_data_range(meter_id):
     """ Get the minimum and maximum date ranges with data
     """
-    engine = create_engine('sqlite:///../data/' + str(meter_id) + '.db',
-                           echo=True)
+    file_name = 'data/' + str(meter_id) + '.db'
+    engine = create_engine('sqlite:///'+file_name, echo=True)
     conn = engine.connect()
     s = select([func.min(meter_readings.c.reading_date),
                func.max(meter_readings.c.reading_date)
@@ -26,8 +26,8 @@ def get_data_range(meter_id):
 def get_energy_data(meter_id, start_date, end_date):
     """ Get energy data for a meter
     """
-    engine = create_engine('sqlite:///../data/' + str(meter_id) + '.db',
-                           echo=True)
+    file_name = 'data/' + str(meter_id) + '.db'
+    engine = create_engine('sqlite:///'+file_name, echo=True)
     conn = engine.connect()
     s = select([meter_readings]).where(
         between(meter_readings.c.reading_date, start_date, end_date))
