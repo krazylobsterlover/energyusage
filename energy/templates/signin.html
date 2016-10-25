@@ -14,8 +14,10 @@
 <form method="POST" action="/signin">
     <div class="form-group">{{ form.username.label }}: {{ form.username(class="form-control") }}</div>
     <div class="form-group">{{ form.password.label }}: {{ form.password(class="form-control") }}</div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary">Log In</button>
 </form>
+<hr />
+<p>If you don't have an account, you can create one here: <a href="{{ url_for('signup') }}">Signup</a>.</p>
 
 
 
