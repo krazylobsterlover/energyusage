@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block container %}
+
+{% if form.errors %}
+        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Error:</strong> {{ form[field_name].label }}: {{ error }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+{% endif %}
+
+<form method="POST" action="/upload" enctype="multipart/form-data">
+    <div class="form-group">{{ form.upload_file.label }}: {{ form.upload_file(class="form-control") }}</div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+
+
+{% endblock %}

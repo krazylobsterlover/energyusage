@@ -91,6 +91,6 @@ ENV/
 # PyCharm
 .idea*
 # Ignore meter data
-data/*.db
+data/*
 energy/data/app.db
 

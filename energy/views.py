@@ -1,16 +1,27 @@
 from flask import render_template, url_for, jsonify, redirect, flash, request
-from flask_login import login_user, logout_user, login_required
-
+from flask_login import login_user, logout_user, login_required, current_user
+import os
 import arrow
 from . import app, db
 from .models import User
 from .models import get_energy_chart_data, get_data_range
-from .forms import UsernamePasswordForm
-
+from .forms import UsernamePasswordForm, FileForm
+from werkzeug.utils import secure_filename
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/upload', methods=["GET", "POST"])
+def upload():
+    form = FileForm()
+    if form.validate_on_submit():
+        filename = secure_filename(current_user.username+'.csv')
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        form.upload_file.data.save(file_path)
+        return 'Created file ' + filename
+    return render_template('upload.html', form=form)
 
 
 @app.route('/signup', methods=["GET", "POST"])
