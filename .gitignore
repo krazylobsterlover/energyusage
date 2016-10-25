@@ -92,3 +92,5 @@ ENV/
 .idea*
 # Ignore meter data
 data/*.db
+energy/data/app.db
+

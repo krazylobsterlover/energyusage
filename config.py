@@ -1,4 +1,5 @@
 DEBUG = True
 SECRET_KEY = 'PASSWORD'
-SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///data/app.db'
 WTF_CSRF_ENABLED = False
+BCRYPT_LOG_ROUNDS = 12

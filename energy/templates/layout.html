@@ -35,7 +35,7 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-fixed-top navbar-light bg-faded">
-  <a class="navbar-brand" href="{{ url_for('homepage') }}">
+  <a class="navbar-brand" href="{{ url_for('index') }}">
       <i class="fa fa-area-chart" aria-hidden="true"></i>
         EnergyUsage</a>
   <ul class="nav navbar-nav">
@@ -45,9 +45,19 @@
     </li>
     {% endfor %}
   </ul>
-  <ul class="nav navbar-nav float-xs-right">
-      <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+
+{% if current_user.is_authenticated %}
+  <span class="navbar-text float-xs-right text-muted">
+    {{ current_user.username }} |
+    <a class="nav-link btn btn-outline-primary btn-sm" href="{{ url_for('signout') }}">Logout</a>
+  </span>
+{% else %}
+    <ul class="nav navbar-nav float-xs-right">
+      <a class="nav-link btn btn-outline-primary btn-sm" href="{{ url_for('signin') }}">Login</a>
    </ul>
+{% endif %}
+
+
 </nav>
 
 {% with messages = get_flashed_messages() %}

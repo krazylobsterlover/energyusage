@@ -1,20 +1,53 @@
 from flask import render_template, url_for, jsonify, redirect, flash, request
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired
+from flask_login import login_user, logout_user, login_required
+
 import arrow
-from energy import app
+from . import app, db
+from .models import User
 from .models import get_energy_chart_data, get_data_range
+from .forms import UsernamePasswordForm
 
 
 @app.route('/')
-def homepage():
+def index():
     return render_template('index.html')
+
+
+@app.route('/signup', methods=["GET", "POST"])
+def signup():
+    form = UsernamePasswordForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('User created!')
+        return redirect(url_for('index'))
+    return render_template('signup.html', form=form)
+
+
+@app.route('/signin', methods=["GET", "POST"])
+def signin():
+    form = UsernamePasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first_or_404()
+        if user.is_correct_password(form.password.data):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            return redirect(url_for('signin'))
+    return render_template('signin.html', form=form)
+
+
+@app.route('/signout')
+def signout():
+    logout_user()
+    return redirect(url_for('index'))
 
 
 @app.route('/usage/')
 @app.route('/usage/<int:report_year>/')
 @app.route('/usage/<int:report_year>/<int:report_month>')
+@login_required
 def usage(report_year=None, report_month=None):
 
     meter_id = 3044076134
@@ -66,8 +99,10 @@ def about():
     return render_template('about.html')
 
 
+
 @app.route('/energy_data/')
 @app.route('/energy_data/<meter_id>.json', methods=['POST', 'GET'])
+@login_required
 def energy_data(meter_id=None):
     if meter_id is None:
         return 'json chart api'
@@ -79,17 +114,3 @@ def energy_data(meter_id=None):
             end_date = params['end_date']
         flotData = get_energy_chart_data(meter_id, start_date, end_date)
         return jsonify(flotData)
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        flash(u'Sorry. User login is not yet supported ...')
-        return redirect(url_for('login'))
-    return render_template('login.html', form=form)
-
-
-class LoginForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired()])
-    password = PasswordField('password', validators=[DataRequired()])

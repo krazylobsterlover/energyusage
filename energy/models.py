@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy import MetaData, Table, Column, DateTime, Float, between, func
 from sqlalchemy.sql import select
 import arrow
+from sqlalchemy.ext.hybrid import hybrid_property
+from . import bcrypt, db
 
 
 metadata = MetaData()
@@ -9,6 +11,51 @@ meter_readings = Table('interval_readings', metadata,
     Column('reading_date', DateTime, primary_key=True),
     Column('ch1', Float, nullable=False),
 )
+
+
+class Energy(db.Model):
+    """ The energy data for a user
+    """
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    reading_date = db.Column(db.DateTime, primary_key=True)
+    imp = db.Column(db.Integer)
+    exp = db.Column(db.Integer)
+
+
+class User(db.Model):
+    """ A user account
+    """
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(64), unique=True)
+    _password = db.Column(db.String(128))
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def _set_password(self, plaintext):
+        self._password = bcrypt.generate_password_hash(plaintext)
+
+    def is_correct_password(self, plaintext):
+        return bcrypt.check_password_hash(self._password, plaintext)
+
+    def is_active(self):
+        """True, as all users are active."""
+        return True
+
+    def get_id(self):
+        """Return the email address to satisfy Flask-Login's requirements."""
+        return self.id
+
+    def is_authenticated(self):
+        """Return True if the user is authenticated."""
+        return True
+
+    def is_anonymous(self):
+        """False, as anonymous users aren't supported."""
+        return False
+
 
 def get_data_range(meter_id):
     """ Get the minimum and maximum date ranges with data
