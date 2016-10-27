@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 app = Flask(__name__)
 app.config.from_object('config')
-#toolbar = DebugToolbarExtension(app)
+toolbar = DebugToolbarExtension(app)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

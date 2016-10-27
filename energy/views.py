@@ -65,8 +65,7 @@ def signout():
 @app.route('/usage/<int:report_year>/<int:report_month>')
 @login_required
 def usage(report_year=None, report_month=None):
-
-    meter_id = 3044076134
+    user_id = User.query.filter_by(username=current_user.username).first()
     # Specify default month to report on
     if report_year is None or report_month is None:
         a = arrow.utcnow()
@@ -77,7 +76,7 @@ def usage(report_year=None, report_month=None):
     month_start = arrow.get(report_year, report_month, 1)
 
     # Get the date range data exists for
-    first_record, last_record = get_data_range(meter_id)
+    first_record, last_record = get_data_range(user_id)
     first_record = arrow.get(first_record).replace(months=-1)
     last_record = arrow.get(last_record)
 
@@ -101,7 +100,7 @@ def usage(report_year=None, report_month=None):
                         'next_enabled': next_month_data
                         }
 
-    return render_template('usage.html', meter_id = meter_id,
+    return render_template('usage.html', meter_id = user_id,
                            report_year = report_year, report_month = report_month,
                            month_navigation = month_navigation,
                            month_desc = month_start.format('MMM YY'),
