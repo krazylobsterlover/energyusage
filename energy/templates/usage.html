@@ -87,11 +87,19 @@ $(document).ready(function(){
                 //plot data
                 [
                     { data: json.consumption,
-                      bars: { show: true, 
+                      bars: { show: true,
                               fill: true,
-                              barWidth: {{ plot_settings.barWidth }} 
+                              align: 'right',
+                              barWidth: {{ plot_settings.barWidth }}
                             },
-                      label: "Consumption (kWh)"
+                      label: "Consumption (Wh)"
+                    },
+                    { data: json.power,
+                      lines: { show: true,
+                               align: 'center',
+                               steps: true
+                            },
+                      label: "Average Power (W)"
                     }
                 ],
                 // plot settings
@@ -133,7 +141,7 @@ $(document).ready(function(){
                 var x = item.datapoint[0].toFixed(2),
                     y = item.datapoint[1].toFixed(2)
                     showTooltip(item.pageX, item.pageY,
-                            item.series.label + ": " + y + "Wh");
+                            item.series.label + ": " + y);
             }
         }
         else {

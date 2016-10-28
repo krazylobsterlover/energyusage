@@ -153,9 +153,7 @@ def energy_data(meter_id=None):
         return 'json chart api'
     else:
         params = request.args.to_dict()
-        if params['start_date']:
-            start_date = params['start_date']
-        if params['end_date']:
-            end_date = params['end_date']
+        start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
+        end_date = arrow.get(params['end_date']).datetime
         flotData = get_energy_chart_data(meter_id, start_date, end_date)
         return jsonify(flotData)
