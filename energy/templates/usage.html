@@ -2,18 +2,48 @@
 {% set active_page = active_page|default('usage') -%}
 {% block title %}Energy Usage{% endblock %}
 {% block container %}
-<h1 class="page-header">Energy Usage <small>{{month_desc}}</small></h1>
+<h1 class="page-header">Energy Usage <small>{{ period_desc }}</small></h1>
 
-<a class="btn btn-secondary {% if not month_navigation.prev_enabled %}disabled{% endif %}" href="{{url_for('usage', report_year=month_navigation.prev_year, report_month=month_navigation.prev_month) }}" role="button">
-    <i class="fa fa-arrow-left" aria-hidden="true"></i>
-</a>
-<a class="btn btn-secondary {% if not month_navigation.next_enabled %}disabled{% endif %}" href="{{url_for('usage', report_year=month_navigation.next_year, report_month=month_navigation.next_month) }}" role="button">
-    <i class="fa fa-arrow-right" aria-hidden="true"></i>
-</a>
 
-<div class="chart-container">
-    <div id="energy" class="chart-placeholder" style="max-width: none; height: 400px;"></div>
-</div>
+
+<div class="card">
+  <div class="card-block">
+
+    <ul class="nav nav-pills">
+    <li class="nav-item">
+        <a class="btn btn-secondary nav-link {% if report_period=='day' %}active{% endif %}"
+        href="{{ url_for('usage', report_period='day', report_date=report_date) }}" role="button">Day</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-secondary nav-link {% if report_period=='month' %}active{% endif %}"
+        href="{{ url_for('usage', report_period='month', report_date=report_date) }}" role="button">Month</a>
+    </li>
+
+
+    <li class="nav-item float-xs-right">
+        <a class="btn btn-secondary {% if not period_nav.next_enabled %}disabled{% endif %}" 
+            href="{{ url_for('usage', report_period=report_period, report_date=period_nav.next_date) }}" role="button">
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+    </li>
+    <li class="nav-item float-xs-right">
+        <a class="btn btn-secondary {% if not period_nav.prev_enabled %}disabled{% endif %}" 
+        href="{{ url_for('usage', report_period=report_period, report_date=period_nav.prev_date) }}" role="button">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </a>
+    </li>
+    </ul><!-- /nav-pills-->
+
+  </div><!-- /card-block-->
+
+  <div class="card-block">
+      <div class="chart-container">
+        <div id="energy" class="chart-placeholder" style="max-width: none; height: 400px;"></div>
+      </div>
+  </div><!-- /card-block-->
+
+</div><!-- /card-->
+
 
 <!-- Flot code - load json into chart div-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
@@ -57,8 +87,11 @@ $(document).ready(function(){
                 //plot data
                 [
                     { data: json.consumption,
-                      lines: { show: true, fill: true },
-                      label: "Consumption"
+                      bars: { show: true, 
+                              fill: true,
+                              barWidth: {{ plot_settings.barWidth }} 
+                            },
+                      label: "Consumption (kWh)"
                     }
                 ],
                 // plot settings
@@ -68,7 +101,7 @@ $(document).ready(function(){
                            markings: weekendAreas},
                     yaxis: {label: "Events"},
                     xaxis: {mode: "time",
-                            minTickSize: [1, "day"]
+                            minTickSize: [1, "{{ plot_settings.minTickSize }}"]
                             }
                 }
        );

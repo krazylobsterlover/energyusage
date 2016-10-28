@@ -67,51 +67,75 @@ def signout():
 
 
 @app.route('/usage/')
-@app.route('/usage/<int:report_year>/')
-@app.route('/usage/<int:report_year>/<int:report_month>')
+@app.route('/usage/<report_period>/', methods=["GET", "POST"])
 @login_required
-def usage(report_year=None, report_month=None):
+def usage(report_period=None):
+    if not report_period:
+        return redirect(url_for('usage', report_period='day'))
+
+    # Get the date range meter data exists for
     user_id = User.query.filter_by(username=current_user.username).first()
-    # Specify default month to report on
-    if report_year is None or report_month is None:
-        a = arrow.utcnow()
-        report_year = a.year
-        report_month = a.month
-        return redirect(url_for('usage', report_year=report_year, report_month=report_month))
-
-    month_start = arrow.get(report_year, report_month, 1)
-
-    # Get the date range data exists for
     first_record, last_record = get_data_range(user_id)
-    first_record = arrow.get(first_record).replace(months=-1)
+    first_record = arrow.get(first_record)
     last_record = arrow.get(last_record)
 
-    next_month = month_start.replace(months=+1)
-    if next_month >= last_record:
-        next_month_data = False
-    else:
-        next_month_data = True
+    # Specify default month to report on
+    try:
+        report_date = request.values['report_date']
+    except KeyError:
+        if report_period == 'month':
+            report_date = str(last_record.year) + '-' + str(last_record.month) + '-01'
+        else:
+            report_date = str(last_record.year) + '-' + str(last_record.month) + '-' + str(last_record.day)
+        return redirect(url_for('usage', report_period=report_period, report_date=report_date))
 
-    prev_month = month_start.replace(months=-1)
-    if prev_month <= first_record:
-        prev_month_data = False
-    else:
-        prev_month_data = True
+    # Get end of reporting period
+    # And next and previous periods
+    rs = arrow.get(report_date)
+    if report_period == 'month':
+        rs = arrow.get(rs.year, rs.month, 1)  # Make sure start of month
+        re = rs.replace(months=+1)
+        period_desc = rs.format('MMM YY')
+        prev_date = rs.replace(months=-1)
+        next_date = rs.replace(months=+1)
+    else:  # Day
+        re = rs.replace(days=+1)
+        period_desc = rs.format('ddd DD MMM YY')
+        prev_date = rs.replace(days=-1)
+        next_date = rs.replace(days=+1)
 
-    month_navigation = {'prev_year': prev_month.year,
-                        'prev_month': prev_month.month,
-                        'prev_enabled': prev_month_data,
-                        'next_year': next_month.year,
-                        'next_month': next_month.month,
-                        'next_enabled': next_month_data
-                        }
+    # Define month navigation
+    if next_date >= last_record:
+        next_date_enabled = False
+    else:
+        next_date_enabled = True
+    if prev_date <= first_record:
+        prev_date_enabled = False
+    else:
+        prev_date_enabled = True
+
+    period_nav = {'prev_date': prev_date.format('YYYY-MM-DD'),
+            'prev_enabled': prev_date_enabled,
+            'next_date': next_date.format('YYYY-MM-DD'),
+            'next_enabled': next_date_enabled
+            }
+
+    # Specify chart settings depending on report period
+    plot_settings = dict()
+    plot_settings['barWidth'] = 1000 * 60 * 10
+    if report_period == 'month':
+        plot_settings['minTickSize'] = 'day'
+    else:  # Day
+        plot_settings['minTickSize'] = 'hour'
+
 
     return render_template('usage.html', meter_id = user_id,
-                           report_year = report_year, report_month = report_month,
-                           month_navigation = month_navigation,
-                           month_desc = month_start.format('MMM YY'),
-                           start_date = month_start.format('YYYY-MM-DD'),
-                           end_date = next_month.format('YYYY-MM-DD')
+                           report_period = report_period, report_date=report_date,
+                           period_desc = period_desc,
+                           period_nav = period_nav,
+                           plot_settings=plot_settings,
+                           start_date = rs.format('YYYY-MM-DD'),
+                           end_date = re.format('YYYY-MM-DD')
                            )
 
 
