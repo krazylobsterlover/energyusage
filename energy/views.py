@@ -23,9 +23,15 @@ def upload():
         filename = secure_filename(current_user.username+'.csv')
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         form.upload_file.data.save(file_path)
-        import_meter_data(current_user.username, file_path)
-        flash('Meter data saved to database')
-        return redirect(url_for('index'))
+        new, skipped = import_meter_data(current_user.username, file_path)
+        if new > 0:
+            msg = str(new) + ' new readings added. '
+        else:
+            msg = 'No new readings added. '
+        if skipped > 0:
+            msg += str(skipped) + ' records already existed and were skipped.'
+        flash(msg)
+        return redirect(url_for('upload'))
     return render_template('upload.html', form=form)
 
 
