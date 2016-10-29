@@ -92,7 +92,36 @@
         <dd class="col-sm-3">${{ (t12.total_cost/100)|round(2) }}</dd>
       </dl>
 
-    </div><!-- /col-->    
+    </div><!-- /col-->
+
+    <div class="col-sm-4">
+      <h4>Demand Tariff</h4>
+
+      <dl class="row">
+        <dt class="col-sm-9">Meter Services Charge</dt>
+        <dd class="col-sm-3">${{ (t14.meter_services_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Supply Charge</dt>
+        <dd class="col-sm-3">${{ (t14.supply_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Consumption Charge</dt>
+        <dd class="col-sm-3">${{ (t14.consumption_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">{% if not t14.peak_season %}Off-{% endif %}Peak Demand</dt>
+        <dd class="col-sm-3">{{ (t14.peak_demand_kW)|round(2) }} kW</dd>
+
+        <dt class="col-sm-9">Demand Charge</dt>
+        <dd class="col-sm-3">${{ (t14.demand_charge/100)|round(2) }}</dd>
+
+      </dl>
+      <hr />
+      <dl class="row">
+        <dt class="col-sm-9">Total Cost</dt>
+        <dd class="col-sm-3">${{ (t14.total_cost/100)|round(2) }}</dd>
+      </dl>
+
+    </div><!-- /col-->
+
   </div><!-- /row-->
 </div><!-- /container-->
 

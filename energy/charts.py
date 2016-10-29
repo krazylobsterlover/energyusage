@@ -1,6 +1,6 @@
 import arrow
 from .models import Energy
-from .tariff import get_energy_data, convert_wh_to_w
+from .tariff import get_energy_data, convert_wh_to_w, get_power_data
 
 
 def get_energy_chart_data(meter_id, start_date, end_date):
@@ -30,31 +30,3 @@ def get_energy_chart_data(meter_id, start_date, end_date):
         chartdata['power'].append([ts, impW])
 
     return chartdata
-
-
-def get_power_data(meter_id, start_date, end_date):
-    """ Get 30 min power data for a meter
-    """
-    power = {}
-    for r in get_energy_data(meter_id, start_date, end_date):
-        rd = arrow.get(r.reading_date)
-        imp = r.imp
-
-        # Round up to nearest 30 min interval
-        if rd.minute == 0:
-            pass # Nothing to do
-        elif rd.minute > 30:
-            rd = rd.replace(minute=0)
-            rd = rd.replace(hours=+1)
-        else:
-            rd = rd.replace(minute=30)
-
-        # Increment dictionary value
-        if rd not in power:
-            power[rd] = imp
-        else:
-            power[rd] += imp
-
-    for key in sorted(power.keys()):
-        impW = convert_wh_to_w(power[key], hours=0.5)
-        yield [key, impW]
