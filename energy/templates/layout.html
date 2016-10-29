@@ -36,9 +36,11 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-fixed-top navbar-light bg-faded">
+  <button class="navbar-toggler hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"></button>
   <a class="navbar-brand" href="{{ url_for('index') }}">
       <i class="fa fa-area-chart" aria-hidden="true"></i>
         EnergyUsage</a>
+  <div class="collapse navbar-toggleable-md" id="navbarResponsive">
   <ul class="nav navbar-nav">
     {% for href, id, caption in navigation_bar %}
     <li class="nav-item{% if id == active_page %} active{% endif %}">
@@ -47,17 +49,17 @@
     {% endfor %}
   </ul>
 
-{% if current_user.is_authenticated %}
+  {% if current_user.is_authenticated %}
   <span class="navbar-text float-xs-right text-muted">
     {{ current_user.username }} |
     <a class="nav-link btn btn-outline-primary btn-sm" href="{{ url_for('signout') }}">Logout</a>
   </span>
-{% else %}
+  {% else %}
     <ul class="nav navbar-nav float-xs-right">
       <a class="nav-link btn btn-outline-primary btn-sm" href="{{ url_for('signin') }}">Login</a>
    </ul>
-{% endif %}
-
+  {% endif %}
+  </div><!-- /collapse -->
 </nav>
 
 </div><!-- /container -->
