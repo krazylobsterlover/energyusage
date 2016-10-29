@@ -8,7 +8,7 @@ from .models import User, get_data_range
 from .loader import import_meter_data
 from .forms import UsernamePasswordForm, FileForm
 from .charts import get_energy_chart_data
-from .tariff import GeneralSupplyTariff
+from .tariff import GeneralSupplyTariff, TimeofUseTariff
 
 
 @app.route('/')
@@ -112,6 +112,9 @@ def usage(report_period=None):
     t11 = GeneralSupplyTariff(user_id)
     t11.calculate_bill(start_date=rs.datetime, end_date=re.datetime)
 
+    t12 = TimeofUseTariff(user_id)
+    t12.calculate_bill(start_date=rs.datetime, end_date=re.datetime)
+
     # Define valid navigation ranges
     if next_date >= last_record:
         next_date_enabled = False
@@ -142,7 +145,7 @@ def usage(report_period=None):
 
     return render_template('usage.html', meter_id = user_id,
                            report_period = report_period, report_date=report_date,
-                           t11=t11,
+                           t11=t11, t12=t12, 
                            period_desc = period_desc,
                            period_nav = period_nav,
                            plot_settings=plot_settings,

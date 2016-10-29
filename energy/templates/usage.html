@@ -48,7 +48,7 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-4">
-      <h4>General Supply Charge</h4>
+      <h4>General Supply Tariff</h4>
 
       <dl class="row">
         <dt class="col-sm-9">Meter Services Charge</dt>
@@ -67,8 +67,32 @@
         <dd class="col-sm-3">${{ (t11.total_cost/100)|round(2) }}</dd>
       </dl>
 
-
     </div><!-- /col-->
+
+    <div class="col-sm-4">
+      <h4>Time of Use Tariff</h4>
+
+      <dl class="row">
+        <dt class="col-sm-9">Meter Services Charge</dt>
+        <dd class="col-sm-3">${{ (t12.meter_services_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Supply Charge</dt>
+        <dd class="col-sm-3">${{ (t12.supply_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Consumption Charge (Peak)</dt>
+        <dd class="col-sm-3">${{ (t12.peak_consumption_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Consumption Charge (Off-Peak)</dt>
+        <dd class="col-sm-3">${{ (t12.offpeak_consumption_charge/100)|round(2) }}</dd>
+
+      </dl>
+      <hr />
+      <dl class="row">
+        <dt class="col-sm-9">Total Cost</dt>
+        <dd class="col-sm-3">${{ (t12.total_cost/100)|round(2) }}</dd>
+      </dl>
+
+    </div><!-- /col-->    
   </div><!-- /row-->
 </div><!-- /container-->
 
