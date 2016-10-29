@@ -45,4 +45,4 @@ def load_from_file(file_path):
             for row in reader:
                 yield row
         else:
-            flash('File was not in the correct format.')
+            flash('File was not in the correct format.', category='danger')

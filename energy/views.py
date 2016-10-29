@@ -31,7 +31,7 @@ def upload():
             msg = 'No new readings added. '
         if skipped > 0:
             msg += str(skipped) + ' records already existed and were skipped.'
-        flash(msg)
+        flash(msg, category='success')
         return redirect(url_for('upload'))
     return render_template('upload.html', form=form)
 
@@ -43,7 +43,7 @@ def signup():
         user = User(username=form.username.data.lower(), password=form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('User created!')
+        flash('User created!', category='success')
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)
 
@@ -54,7 +54,7 @@ def signin():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data.lower()).first()
         if user is None:
-            flash('No user with that name found: ' + str(form.username.data.lower()))
+            flash('No user "' + str(form.username.data.lower()) + '" found!', category='danger')
             return redirect(url_for('signin'))
         if user.is_correct_password(form.password.data):
             login_user(user)

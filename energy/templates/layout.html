@@ -60,24 +60,28 @@
 
 </nav>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-        <div class="alert alert-info" role="alert">{{ message }}</div>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
 </div><!-- /container -->
 
 <div class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+        {% if category in ['message','info'] %}
+        <div class="alert alert-info" role="alert"><i class="fa fa-info-circle" aria-hidden="true"></i> 
+        {% else %}
+        <div class="alert alert-{{ category }}" role="alert">
+        {% endif %}
+        {{ message }}
+        </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
 {% block container %}
 {% endblock container %}
 </div><!-- /container -->
 
 <div class="container">
-<hr>
 <footer>
 </footer>
 </div><!-- /container -->
