@@ -4,10 +4,11 @@ import os
 import arrow
 from werkzeug.utils import secure_filename
 from . import app, db
-from .models import User
-from .models import get_energy_chart_data, get_data_range
+from .models import User, get_data_range
 from .loader import import_meter_data
 from .forms import UsernamePasswordForm, FileForm
+from .charts import get_energy_chart_data
+from .tariff import GeneralSupplyTariff
 
 
 @app.route('/')
@@ -77,7 +78,7 @@ def usage(report_period=None):
         return redirect(url_for('usage', report_period='day'))
 
     # Get the date range meter data exists for
-    user_id = User.query.filter_by(username=current_user.username).first()
+    user_id = User.query.filter_by(username=current_user.username).first().id
     first_record, last_record = get_data_range(user_id)
     first_record = arrow.get(first_record)
     last_record = arrow.get(last_record)
@@ -106,6 +107,10 @@ def usage(report_period=None):
         period_desc = rs.format('ddd DD MMM YY')
         prev_date = rs.replace(days=-1)
         next_date = rs.replace(days=+1)
+
+    # Calculate usage costs
+    t11 = GeneralSupplyTariff(user_id)
+    t11.calculate_bill(start_date=rs.datetime, end_date=re.datetime)
 
     # Define valid navigation ranges
     if next_date >= last_record:
@@ -137,6 +142,7 @@ def usage(report_period=None):
 
     return render_template('usage.html', meter_id = user_id,
                            report_period = report_period, report_date=report_date,
+                           t11=t11,
                            period_desc = period_desc,
                            period_nav = period_nav,
                            plot_settings=plot_settings,

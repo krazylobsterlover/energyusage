@@ -45,6 +45,38 @@
 </div><!-- /card-->
 
 
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <h4>General Supply Charge</h4>
+
+      <dl class="row">
+        <dt class="col-sm-9">Meter Services Charge</dt>
+        <dd class="col-sm-3">${{ (t11.meter_services_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Supply Charge</dt>
+        <dd class="col-sm-3">${{ (t11.supply_charge/100)|round(2) }}</dd>
+
+        <dt class="col-sm-9">Consumption Charge</dt>
+        <dd class="col-sm-3">${{ (t11.consumption_charge/100)|round(2) }}</dd>
+
+      </dl>
+      <hr />
+      <dl class="row">
+        <dt class="col-sm-9">Total Cost</dt>
+        <dd class="col-sm-3">${{ (t11.total_cost/100)|round(2) }}</dd>
+      </dl>
+
+
+    </div><!-- /col-->
+  </div><!-- /row-->
+</div><!-- /container-->
+
+
+
+
+
+
 <!-- Flot code - load json into chart div-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>

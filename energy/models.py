@@ -15,6 +15,14 @@ class Energy(db.Model):
     exp = db.Column(db.Integer)
 
 
+def get_data_range(meter_id):
+    """ Get the minimum and maximum date ranges with data
+    """
+    min_date = db.session.query(func.min(Energy.reading_date)).filter(Energy.user_id==meter_id).scalar()
+    max_date = db.session.query(func.max(Energy.reading_date)).filter(Energy.user_id==meter_id).scalar()
+    return (min_date, max_date)
+
+
 class User(db.Model):
     """ A user account
     """
@@ -51,80 +59,5 @@ class User(db.Model):
         return False
 
 
-def get_data_range(meter_id):
-    """ Get the minimum and maximum date ranges with data
-    """
-    min_date = db.session.query(func.min(Energy.reading_date)).filter(Energy.user_id==1).scalar()
-    max_date = db.session.query(func.max(Energy.reading_date)).filter(Energy.user_id==1).scalar()
-    return (min_date, max_date)
 
 
-def get_energy_data(meter_id, start_date, end_date):
-    """ Get energy data for a meter
-    """
-    readings = Energy.query.filter(Energy.user_id==1)
-    readings = readings.filter(Energy.reading_date>=start_date)
-    readings = readings.filter(Energy.reading_date<=end_date).all()
-    return readings
-
-
-def get_power_data(meter_id, start_date, end_date):
-    """ Get 30 min power data for a meter
-    """
-    power = {}
-    for r in get_energy_data(meter_id, start_date, end_date):
-        rd = arrow.get(r.reading_date)
-        imp = r.imp
-
-        # Round up to nearest 30 min interval
-        if rd.minute == 0:
-            pass # Nothing to do
-        elif rd.minute > 30:
-            rd = rd.replace(minute=0)
-            rd = rd.replace(hours=+1)
-        else:
-            rd = rd.replace(minute=30)
-
-        # Increment dictionary value
-        if rd not in power:
-            power[rd] = imp
-        else:
-            power[rd] += imp
-
-    for key in sorted(power.keys()):
-        impW = convert_wh_to_w(power[key], hours=0.5)
-        yield [key, impW]
-
-
-def convert_wh_to_w(Wh, hours=0.5):
-    """ Find average W for the period, specified in hours
-    """
-    return Wh/hours
-
-
-def get_energy_chart_data(meter_id, start_date, end_date):
-    """ Return json object for flot chart
-    """
-    chartdata = {}
-    chartdata['label'] = 'Energy Profile'
-    chartdata['consumption'] = []
-
-    for r in get_energy_data(meter_id, start_date, end_date):
-        dTime = arrow.get(r.reading_date)
-        ts = int(dTime.timestamp * 1000)
-        impWh = r.imp
-        chartdata['consumption'].append([ts, impWh])
-
-    chartdata['power'] = []
-    for r in get_power_data(meter_id, start_date, end_date):
-        dTime = arrow.get(r[0])
-        ts = int(dTime.timestamp * 1000) 
-        ts = ts - (1000 * 60 * 30)  # Offset 30 mins so steps line up properly on chart
-        impW = r[1]
-        chartdata['power'].append([ts, impW])
-
-    # Finally add one more point to finish the step increment
-    ts = ts + (1000 * 60 * 30)  # Offset 30 mins so steps line up properly on chart
-    chartdata['power'].append([ts, impW])
-
-    return chartdata
