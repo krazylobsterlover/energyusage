@@ -123,10 +123,17 @@ class DemandTariff(object):
         for day in top_four_days:
             for reading in peak_days[day][1]:
                 demand_window.append(reading)
-        self.peak_demand_kW = statistics.mean(demand_window)/1000
+        if demand_window:
+            self.peak_demand_kW = statistics.mean(demand_window)/1000
+        else:
+            self.peak_demand_kW = 0
 
         # Determine rate depending on if peak season
-        self.peak_season = in_peak_season(top_four_days[0])
+        try:
+            peak_day = top_four_days[0]
+        except IndexError:
+            peak_day = arrow.get(start_date).format('YYYY-MM-DD')
+        self.peak_season = in_peak_season(peak_day)
         if self.peak_season:
             self.demand_charge = self.peak_demand_kW * self.demand_charge_peak
         else:
