@@ -107,13 +107,16 @@ def usage(report_period=None):
         prev_date = rs.replace(days=-1)
         next_date = rs.replace(days=+1)
 
-    # Define month navigation
+    # Define valid navigation ranges
     if next_date >= last_record:
         next_date_enabled = False
     else:
         next_date_enabled = True
     if prev_date <= first_record:
-        prev_date_enabled = False
+        if report_period == 'month' and prev_date >= first_record.replace(months=-1):
+            prev_date_enabled = True
+        else:
+            prev_date_enabled = False
     else:
         prev_date_enabled = True
 
