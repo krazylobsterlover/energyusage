@@ -110,13 +110,14 @@ class DemandTariff(object):
         for day in peak_days:
             daily_peak = max(peak_days[day])
             peak_days[day] = (daily_peak, peak_days[day])
+        self.peak_days = peak_days
 
-        # Sort and get top 4 days
-        # For now lets just get first 4 days
+        # Sort and get top 4 demand days
         top_four_days = []
-        for i, day in enumerate(peak_days.keys()):
+        for i, day in enumerate(sorted(peak_days, key=peak_days.get, reverse=True)):
             if i < 4:
                 top_four_days.append(day)
+        self.top_four_days = top_four_days
 
         # Calculate average demand
         demand_window = []
@@ -143,7 +144,6 @@ class DemandTariff(object):
             self.demand_charge = self.peak_demand_kW * self.demand_charge_offpeak * 100  # in cents
 
         # Daily Calculation should scale demand charge
-        print(num_days)
         if num_days < 2:
             self.demand_charge = self.demand_charge / 30
         self.total_cost = self.meter_services_charge + self.supply_charge + self.consumption_charge + self.demand_charge
