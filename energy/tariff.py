@@ -1,6 +1,7 @@
 import arrow
 import datetime
 import statistics
+import calendar
 from .models import Energy
 
 METER_SERVICES_CHARGE = 8.94  # cents/day
@@ -143,9 +144,10 @@ class DemandTariff(object):
                 self.peak_demand_kW = 3
             self.demand_charge = self.peak_demand_kW * self.demand_charge_offpeak * 100  # in cents
 
-        # Daily Calculation should scale demand charge
-        if num_days < 2:
-            self.demand_charge = self.demand_charge / 30
+        # Daily calculation should scale demand charge
+        days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
+        if num_days == 1:
+            self.demand_charge = self.demand_charge * (1 / days_in_month)
         self.total_cost = self.meter_services_charge + self.supply_charge + self.consumption_charge + self.demand_charge
         return self.total_cost
 
