@@ -8,4 +8,4 @@ class UsernamePasswordForm(FlaskForm):
 
 
 class FileForm(FlaskForm):
-    upload_file = FileField('Energy Data (.csv)')
+    upload_file = FileField('Energy Data (.csv)', validators=[DataRequired()])

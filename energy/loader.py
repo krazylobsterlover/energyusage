@@ -1,8 +1,32 @@
 import csv
+import io
+import os
 import arrow
 from .models import User, Energy
 from . import db
 from flask import flash
+
+
+def export_meter_data(user_id):
+
+    header = ['READING_DATE', 'IMP', 'EXP']
+    data = get_meter_data(user_id)
+    return construct_csv(header, data)
+
+
+def get_meter_data(user_id):
+    readings = Energy.query.filter(Energy.user_id==user_id)
+    for r in readings:
+        yield [r.reading_date, r.imp, r.exp]
+
+
+def construct_csv(header, data):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(header)
+    for row in data:
+        writer.writerow(row)
+    return output.getvalue()
 
 
 def import_meter_data(user_name, file_path):
@@ -38,6 +62,10 @@ def parse_date(date_string):
 def load_from_file(file_path):
     """ Return load data from csv
     """
+    ext = os.path.splitext(file_path)[1]
+    if ext == 'csv':
+        flash('File should be .csv not ' + str(ext), category='danger')
+
     with open(file_path, newline='') as csv_file:
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
         h = next(reader, None)  # first row is headings
@@ -45,4 +73,4 @@ def load_from_file(file_path):
             for row in reader:
                 yield row
         else:
-            flash('File was not in the correct format.', category='danger')
+            flash('CSV was not in the correct format.', category='danger')

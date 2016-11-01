@@ -1,11 +1,11 @@
-from flask import render_template, url_for, jsonify, redirect, flash, request
+from flask import render_template, url_for, jsonify, redirect, flash, request, Response
 from flask_login import login_user, logout_user, login_required, current_user
 import os
 import arrow
 from werkzeug.utils import secure_filename
 from . import app, db
 from .models import User, get_data_range
-from .loader import import_meter_data
+from .loader import import_meter_data, export_meter_data
 from .forms import UsernamePasswordForm, FileForm
 from .charts import get_energy_chart_data
 from .tariff import GeneralSupplyTariff, TimeofUseTariff, DemandTariff
@@ -16,9 +16,9 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/upload', methods=["GET", "POST"])
+@app.route('/manage', methods=["GET", "POST"])
 @login_required
-def upload():
+def manage():
     form = FileForm()
     if form.validate_on_submit():
         filename = secure_filename(current_user.username+'.csv')
@@ -27,13 +27,29 @@ def upload():
         new, skipped = import_meter_data(current_user.username, file_path)
         if new > 0:
             msg = str(new) + ' new readings added. '
+            flash(msg, category='success')
         else:
-            msg = 'No new readings added. '
+            msg = 'No new readings could be added. '
+            flash(msg, category='warning')
+
         if skipped > 0:
-            msg += str(skipped) + ' records already existed and were skipped.'
-        flash(msg, category='success')
-        return redirect(url_for('upload'))
-    return render_template('upload.html', form=form)
+            msg = str(skipped) + ' records already existed and were skipped.'
+            flash(msg, category='warning')
+
+        return redirect(url_for('manage'))
+    return render_template('manage.html', form=form)
+
+
+
+@app.route('/export')
+@login_required
+def export_data():
+    user_id = User.query.filter_by(username=current_user.username).first().id
+    return Response(export_meter_data(user_id),
+                    mimetype="text/csv",
+                    headers={"Content-disposition":
+                    "attachment; filename=data-export.csv"}
+                    )
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -82,6 +98,12 @@ def usage(report_period=None):
     first_record, last_record = get_data_range(user_id)
     first_record = arrow.get(first_record)
     last_record = arrow.get(last_record)
+    num_days = (last_record - first_record).days
+
+    if num_days < 1:
+        flash('You need to upload some data before you can chart usage.',
+              category='warning')
+        return redirect(url_for('manage'))
 
     # Specify default month to report on
     try:
