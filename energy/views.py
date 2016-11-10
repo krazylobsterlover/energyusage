@@ -24,7 +24,7 @@ def manage():
         filename = secure_filename(current_user.username+'.csv')
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         form.upload_file.data.save(file_path)
-        new, skipped = import_meter_data(current_user.username, file_path)
+        new, skipped, failed = import_meter_data(current_user.username, file_path)
         if new > 0:
             msg = str(new) + ' new readings added. '
             flash(msg, category='success')
@@ -35,6 +35,10 @@ def manage():
         if skipped > 0:
             msg = str(skipped) + ' records already existed and were skipped.'
             flash(msg, category='warning')
+
+        if failed > 0:
+            msg = str(failed) + ' records were in the wrong format.'
+            flash(msg, category='danger')
 
         return redirect(url_for('manage'))
     return render_template('manage.html', form=form)

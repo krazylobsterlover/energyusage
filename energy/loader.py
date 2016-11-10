@@ -5,6 +5,7 @@ import arrow
 from .models import User, Energy
 from . import db
 from flask import flash
+import logging
 
 
 def export_meter_data(user_id):
@@ -35,8 +36,14 @@ def import_meter_data(user_name, file_path):
     user = User.query.filter_by(username=user_name).first()
     new_records = 0
     skipped_records = 0
+    failed_records = 0
     for row in load_from_file(file_path):
-        reading_date = parse_date(row[0])
+        try:
+            reading_date = parse_date(row[0])
+        except:
+            msg = '{} is not a date format'.format(row[0])
+            logging.error(msg)
+            failed_records += 1
         imp = int(row[1])
         exp = int(row[2])
         if Energy.query.filter_by(user_id=user.id, reading_date=reading_date).first():
@@ -47,14 +54,20 @@ def import_meter_data(user_name, file_path):
             db.session.add(energy)
             new_records += 1
     db.session.commit()
-    return new_records, skipped_records
+    return new_records, skipped_records, failed_records
 
 
 def parse_date(date_string):
     try:
         return arrow.get(date_string).datetime
     except arrow.parser.ParserError:
-        return arrow.get(date_string, 'DD/MM/YYYY HH:mm:ss').datetime
+        try:
+            return arrow.get(date_string, 'DD/MM/YYYY HH:mm:ss').datetime
+        except arrow.parser.ParserError:
+            try:
+                return arrow.get(date_string, 'DD/MM/YYYY H:mm').datetime
+            except arrow.parser.ParserError:
+                return arrow.get(date_string, 'D/MM/YYYY H:mm').datetime
     except:
         raise
 
