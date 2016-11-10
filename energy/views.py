@@ -9,6 +9,7 @@ from .loader import import_meter_data, export_meter_data
 from .forms import UsernamePasswordForm, FileForm
 from .charts import get_energy_chart_data
 from .tariff import GeneralSupplyTariff, TimeofUseTariff, DemandTariff
+import sqlalchemy
 
 
 @app.route('/')
@@ -61,10 +62,15 @@ def signup():
     form = UsernamePasswordForm()
     if form.validate_on_submit():
         user = User(username=form.username.data.lower(), password=form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('User created!', category='success')
-        return redirect(url_for('index'))
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('User created!', category='success')
+            return redirect(url_for('index'))
+        except sqlalchemy.exc.IntegrityError:
+            flash('Sorry, a user with that name already exists.', category='warning')
+            return redirect(url_for('signup'))
+
     return render_template('signup.html', form=form)
 
 
@@ -91,19 +97,59 @@ def signout():
 
 
 @app.route('/usage/')
-@app.route('/usage/<report_period>/', methods=["GET", "POST"])
 @login_required
-def usage(report_period=None):
-    if not report_period:
-        return redirect(url_for('usage', report_period='day'))
+def usage():
+    return redirect(url_for('usage_day'))
 
-    # Get the date range meter data exists for
+
+@app.route('/usage/day/', methods=["GET", "POST"])
+@login_required
+def usage_day():
+
+    # Get user details
     user_id = User.query.filter_by(username=current_user.username).first().id
-    first_record, last_record = get_data_range(user_id)
-    first_record = arrow.get(first_record)
-    last_record = arrow.get(last_record)
-    num_days = (last_record - first_record).days
+    first_record, last_record, num_days = get_user_stats(user_id)
+    if num_days < 1:
+        flash('You need to upload some data before you can chart usage.',
+              category='warning')
+        return redirect(url_for('manage'))
 
+    # Specify default day to report on
+    try:
+        report_date = request.values['report_date']
+    except KeyError:
+        report_date = str(last_record.year) + '-' + str(last_record.month) + '-' + str(last_record.day)
+        return redirect(url_for('usage_day', report_date=report_date))
+
+    # Get end of reporting period
+    # And next and previous periods
+    rs = arrow.get(report_date)
+    re = rs.replace(days=+1)
+    period_desc = rs.format('ddd DD MMM YY')
+    period_nav = get_navigation_range('day', rs, first_record, last_record)
+
+    t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
+    plot_settings = calulate_plot_settings(report_period='day')
+
+
+    return render_template('usage_day.html', meter_id = user_id,
+                           report_period = 'day', report_date=report_date,
+                           t11=t11, t12=t12, t14=t14,
+                           period_desc = period_desc,
+                           period_nav = period_nav,
+                           plot_settings=plot_settings,
+                           start_date = rs.format('YYYY-MM-DD'),
+                           end_date = re.format('YYYY-MM-DD')
+                           )
+
+
+@app.route('/usage/month/', methods=["GET", "POST"])
+@login_required
+def usage_month():
+
+    # Get user details
+    user_id = User.query.filter_by(username=current_user.username).first().id
+    first_record, last_record, num_days = get_user_stats(user_id)
     if num_days < 1:
         flash('You need to upload some data before you can chart usage.',
               category='warning')
@@ -113,28 +159,64 @@ def usage(report_period=None):
     try:
         report_date = request.values['report_date']
     except KeyError:
-        if report_period == 'month':
-            report_date = str(last_record.year) + '-' + str(last_record.month) + '-01'
-        else:
-            report_date = str(last_record.year) + '-' + str(last_record.month) + '-' + str(last_record.day)
-        return redirect(url_for('usage', report_period=report_period, report_date=report_date))
+        report_date = str(last_record.year) + '-' + str(last_record.month) + '-01'
+        return redirect(url_for('usage_month', report_date=report_date))
 
     # Get end of reporting period
     # And next and previous periods
     rs = arrow.get(report_date)
-    if report_period == 'month':
-        rs = arrow.get(rs.year, rs.month, 1)  # Make sure start of month
-        re = rs.replace(months=+1)
-        period_desc = rs.format('MMM YY')
-        prev_date = rs.replace(months=-1)
-        next_date = rs.replace(months=+1)
-    else:  # Day
-        re = rs.replace(days=+1)
-        period_desc = rs.format('ddd DD MMM YY')
-        prev_date = rs.replace(days=-1)
-        next_date = rs.replace(days=+1)
+    rs = arrow.get(rs.year, rs.month, 1)  # Make sure start of month
+    re = rs.replace(months=+1)
+    period_desc = rs.format('MMM YY')
+    period_nav = get_navigation_range('month', rs, first_record, last_record)
 
-    # Calculate usage costs
+    t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
+    plot_settings = calulate_plot_settings(report_period='month')
+
+
+    return render_template('usage_month.html', meter_id = user_id,
+                           report_period = 'month', report_date=report_date,
+                           t11=t11, t12=t12, t14=t14,
+                           period_desc = period_desc,
+                           period_nav = period_nav,
+                           plot_settings=plot_settings,
+                           start_date = rs.format('YYYY-MM-DD'),
+                           end_date = re.format('YYYY-MM-DD')
+                           )
+
+
+@app.route('/about/')
+def about():
+    return render_template('about.html')
+
+
+@app.route('/energy_data/')
+@app.route('/energy_data/<meter_id>.json', methods=['POST', 'GET'])
+@login_required
+def energy_data(meter_id=None):
+    if meter_id is None:
+        return 'json chart api'
+    else:
+        params = request.args.to_dict()
+        start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
+        end_date = arrow.get(params['end_date']).datetime
+        flotData = get_energy_chart_data(meter_id, start_date, end_date)
+        return jsonify(flotData)
+
+
+def get_user_stats(user_id):
+    """ Get the date range meter data exists for
+    """
+    first_record, last_record = get_data_range(user_id)
+    first_record = arrow.get(first_record)
+    last_record = arrow.get(last_record)
+    num_days = (last_record - first_record).days
+    return first_record, last_record, num_days
+
+
+def calculate_usage_costs(user_id, rs, re):
+    """ Calculate usage costs
+    """
     t11 = GeneralSupplyTariff(user_id)
     t11.calculate_bill(start_date=rs.datetime, end_date=re.datetime)
 
@@ -143,6 +225,19 @@ def usage(report_period=None):
 
     t14 = DemandTariff(user_id)
     t14.calculate_bill(start_date=rs.datetime, end_date=re.datetime)
+
+    return t11, t12, t14
+
+
+def get_navigation_range(report_period, rs, first_record, last_record):
+    """ Get the next period to report on (if data available)
+    """
+    if report_period == 'day':
+        prev_date = rs.replace(days=-1)
+        next_date = rs.replace(days=+1)
+    else:
+        prev_date = rs.replace(months=-1)
+        next_date = rs.replace(months=+1)
 
     # Define valid navigation ranges
     if next_date >= last_record:
@@ -158,11 +253,15 @@ def usage(report_period=None):
         prev_date_enabled = True
 
     period_nav = {'prev_date': prev_date.format('YYYY-MM-DD'),
-            'prev_enabled': prev_date_enabled,
-            'next_date': next_date.format('YYYY-MM-DD'),
-            'next_enabled': next_date_enabled
-            }
+        'prev_enabled': prev_date_enabled,
+        'next_date': next_date.format('YYYY-MM-DD'),
+        'next_enabled': next_date_enabled
+        }
 
+    return period_nav
+
+
+def calulate_plot_settings(report_period='day'):
     # Specify chart settings depending on report period
     plot_settings = dict()
     plot_settings['barWidth'] = 1000 * 60 * 10
@@ -170,34 +269,4 @@ def usage(report_period=None):
         plot_settings['minTickSize'] = 'day'
     else:  # Day
         plot_settings['minTickSize'] = 'hour'
-
-
-    return render_template('usage.html', meter_id = user_id,
-                           report_period = report_period, report_date=report_date,
-                           t11=t11, t12=t12, t14=t14,
-                           period_desc = period_desc,
-                           period_nav = period_nav,
-                           plot_settings=plot_settings,
-                           start_date = rs.format('YYYY-MM-DD'),
-                           end_date = re.format('YYYY-MM-DD')
-                           )
-
-
-@app.route('/about/')
-def about():
-    return render_template('about.html')
-
-
-
-@app.route('/energy_data/')
-@app.route('/energy_data/<meter_id>.json', methods=['POST', 'GET'])
-@login_required
-def energy_data(meter_id=None):
-    if meter_id is None:
-        return 'json chart api'
-    else:
-        params = request.args.to_dict()
-        start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
-        end_date = arrow.get(params['end_date']).datetime
-        flotData = get_energy_chart_data(meter_id, start_date, end_date)
-        return jsonify(flotData)
+    return plot_settings

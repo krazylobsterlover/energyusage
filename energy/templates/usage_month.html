@@ -11,22 +11,22 @@
     <ul class="nav nav-pills">
     <li class="nav-item">
         <a class="btn btn-secondary nav-link {% if report_period=='day' %}active{% endif %}"
-        href="{{ url_for('usage', report_period='day', report_date=report_date) }}" role="button">Day</a>
+        href="{{ url_for('usage_day', report_date=report_date) }}" role="button">Day</a>
     </li>
     <li class="nav-item">
         <a class="btn btn-secondary nav-link {% if report_period=='month' %}active{% endif %}"
-        href="{{ url_for('usage', report_period='month', report_date=report_date) }}" role="button">Month</a>
+        href="{{ url_for('usage_month', report_date=report_date) }}" role="button">Month</a>
     </li>
 
     <li class="nav-item float-xs-right">
         <a class="btn btn-secondary {% if not period_nav.next_enabled %}disabled{% endif %}"
-            href="{{ url_for('usage', report_period=report_period, report_date=period_nav.next_date) }}" role="button">
+            href="{{ url_for('usage_month', report_date=period_nav.next_date) }}" role="button">
             <i class="fa fa-arrow-right" aria-hidden="true"></i>
         </a>
     </li>
     <li class="nav-item float-xs-right">
         <a class="btn btn-secondary {% if not period_nav.prev_enabled %}disabled{% endif %}"
-        href="{{ url_for('usage', report_period=report_period, report_date=period_nav.prev_date) }}" role="button">
+        href="{{ url_for('usage_month', report_date=period_nav.prev_date) }}" role="button">
         <i class="fa fa-arrow-left" aria-hidden="true"></i>
         </a>
     </li>
