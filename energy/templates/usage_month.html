@@ -194,33 +194,6 @@ $(document).ready(function(){
             return markings;
         }
 
-    function peakTime(axes) {
-
-            var markings = [],
-                d = new Date(axes.xaxis.min);
-
-            // go to the start of peak period
-            d.setUTCSeconds(0);
-            d.setUTCMinutes(0);
-            d.setUTCHours(15);
-
-            var i = d.getTime();
-
-            // when we don't set yaxis, the rectangle automatically
-            // extends to infinity upwards and downwards
-
-            do {
-                markings.push({ xaxis: { from: i, to: i + 6.5 * 60 * 60 * 1000 },
-                                color: {% if t14.peak_season == True %}"#DAA8AA"{% else %}"#FFFFFF"{% endif %} }
-                            );
-                i += 7 * 24 * 60 * 60 * 1000;
-            } while (i < axes.xaxis.max);
-
-            return markings;
-        }
-
-
-
     $.getJSON("{{ url_for('energy_data', meter_id=meter_id, start_date=start_date, end_date=end_date)|safe }}", function(json) {
        //success - data loaded, now use plot:
        var plotarea = $("#energy");
@@ -253,7 +226,8 @@ $(document).ready(function(){
                 {
                     grid: {hoverable: true,
                            clickable: true,
-                           markings: {% if report_period=='day' %}peakTime{% else %}weekendAreas{% endif %}},
+                           markings: weekendAreas
+                          },
                     yaxis: {label: "Events"},
                     xaxis: {mode: "time",
                             minTickSize: [1, "{{ plot_settings.minTickSize }}"]
