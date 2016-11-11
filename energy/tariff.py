@@ -146,8 +146,7 @@ class DemandTariff(object):
 
         # Daily calculation should scale demand charge
         days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
-        if num_days == 1:
-            self.demand_charge = self.demand_charge * (1 / days_in_month)
+        self.demand_charge = self.demand_charge * (num_days / days_in_month)
         self.total_cost = self.meter_services_charge + self.supply_charge + self.consumption_charge + self.demand_charge
         return self.total_cost
 

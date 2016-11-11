@@ -167,8 +167,14 @@ def usage_month():
     rs = arrow.get(report_date)
     rs = arrow.get(rs.year, rs.month, 1)  # Make sure start of month
     re = rs.replace(months=+1)
-    period_desc = rs.format('MMM YY')
     period_nav = get_navigation_range('month', rs, first_record, last_record)
+    if rs < first_record:
+        rs = first_record
+    if re > last_record:
+        re = last_record
+    num_days = (re - rs).days
+    period_desc = rs.format('MMM YY')
+
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
     plot_settings = calulate_plot_settings(report_period='month')
@@ -178,7 +184,7 @@ def usage_month():
                            report_period = 'month', report_date=report_date,
                            t11=t11, t12=t12, t14=t14,
                            period_desc = period_desc,
-                           period_nav = period_nav,
+                           period_nav = period_nav, num_days=num_days,
                            plot_settings=plot_settings,
                            start_date = rs.format('YYYY-MM-DD'),
                            end_date = re.format('YYYY-MM-DD')
@@ -244,6 +250,7 @@ def get_navigation_range(report_period, rs, first_record, last_record):
         next_date_enabled = False
     else:
         next_date_enabled = True
+
     if prev_date <= first_record:
         if report_period == 'month' and prev_date >= first_record.replace(months=-1):
             prev_date_enabled = True
