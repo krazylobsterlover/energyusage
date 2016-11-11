@@ -99,7 +99,7 @@ def signout():
 @app.route('/usage/')
 @login_required
 def usage():
-    return redirect(url_for('usage_day'))
+    return redirect(url_for('usage_all'))
 
 
 @app.route('/usage/day/', methods=["GET", "POST"])
@@ -185,6 +185,40 @@ def usage_month():
                            t11=t11, t12=t12, t14=t14,
                            period_desc = period_desc,
                            period_nav = period_nav, num_days=num_days,
+                           plot_settings=plot_settings,
+                           start_date = rs.format('YYYY-MM-DD'),
+                           end_date = re.format('YYYY-MM-DD')
+                           )
+
+
+@app.route('/usage/all/', methods=["GET", "POST"])
+@login_required
+def usage_all():
+    # Get user details
+    user_id = User.query.filter_by(username=current_user.username).first().id
+    first_record, last_record, num_days = get_user_stats(user_id)
+    if num_days < 1:
+        flash('You need to upload some data before you can chart usage.',
+              category='warning')
+        return redirect(url_for('manage'))
+
+    # Specify default day to report on
+    try:
+        report_date = request.values['report_date']
+    except KeyError:
+        report_date = str(last_record.year) + '-' + str(last_record.month) + '-' + str(last_record.day)
+
+    rs = arrow.get(first_record)
+    re = arrow.get(last_record)
+    num_days = (re - rs).days
+
+    t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
+    plot_settings = calulate_plot_settings(report_period='month')
+
+
+    return render_template('usage_all.html', meter_id = user_id,
+                           report_date = report_date,
+                           t11=t11, t12=t12, t14=t14,
                            plot_settings=plot_settings,
                            start_date = rs.format('YYYY-MM-DD'),
                            end_date = re.format('YYYY-MM-DD')

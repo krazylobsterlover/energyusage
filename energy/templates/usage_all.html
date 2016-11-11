@@ -14,29 +14,16 @@
         href="{{ url_for('usage_day', report_date=report_date) }}" role="button">Day</a>
     </li>
     <li class="nav-item">
-        <a class="btn btn-secondary nav-link active"
+        <a class="btn btn-secondary nav-link"
         href="{{ url_for('usage_month', report_date=report_date) }}" role="button">Month</a>
     </li>
     <li class="nav-item">
-        <a class="btn btn-secondary nav-link"
-        href="{{ url_for('usage_all') }}" role="button">All</a>
-    </li>
-
-    <li class="nav-item float-xs-right">
-        <a class="btn btn-secondary {% if not period_nav.next_enabled %}disabled{% endif %}"
-            href="{{ url_for('usage_month', report_date=period_nav.next_date) }}" role="button">
-            <i class="fa fa-arrow-right" aria-hidden="true"></i>
-        </a>
-    </li>
-    <li class="nav-item float-xs-right">
-        <a class="btn btn-secondary {% if not period_nav.prev_enabled %}disabled{% endif %}"
-        href="{{ url_for('usage_month', report_date=period_nav.prev_date) }}" role="button">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-        </a>
+        <a class="btn btn-secondary nav-link active"
+        href="{{ url_for('usage_all', report_date=report_date) }}" role="button">All</a>
     </li>
 
     <li class="nav-item float-xs-right navbar-text">
-    <strong>{{ period_desc }}&nbsp;&nbsp;</strong>
+    <strong>All Data</strong>
     </li>
 
     </ul><!-- /nav-pills-->
@@ -50,125 +37,6 @@
   </div><!-- /card-block-->
 
 </div><!-- /card-->
-
-
-
-
-  <div class="row">
-    <div class="col-sm-4">
-    <div class="card card-block">
-      <h4>General Supply Tariff</h4>
-
-      <dl class="row">
-        <dt class="col-sm-9">Meter Services Charge</dt>
-        <dd class="col-sm-3">${{ (t11.meter_services_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Supply Charge</dt>
-        <dd class="col-sm-3">${{ (t11.supply_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Consumption Charge</dt>
-        <dd class="col-sm-3">${{ (t11.consumption_charge/100)|round(2) }}</dd>
-
-      </dl>
-      <hr />
-      <dl class="row">
-        <dt class="col-sm-9">Total Cost</dt>
-        <dd class="col-sm-3">${{ (t11.total_cost/100)|round(2) }}</dd>
-      </dl>
-    </div><!-- /card-->
-    </div><!-- /col-->
-
-    <div class="col-sm-4">
-    <div class="card card-block">
-      <h4>Time of Use Tariff</h4>
-
-      <dl class="row">
-        <dt class="col-sm-9">Meter Services Charge</dt>
-        <dd class="col-sm-3">${{ (t12.meter_services_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Supply Charge</dt>
-        <dd class="col-sm-3">${{ (t12.supply_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Consumption (Peak)</dt>
-        <dd class="col-sm-3">${{ (t12.peak_consumption_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Consumption (Off-Peak)</dt>
-        <dd class="col-sm-3">${{ (t12.offpeak_consumption_charge/100)|round(2) }}</dd>
-
-      </dl>
-      <hr />
-      <dl class="row">
-        <dt class="col-sm-9">Total Cost</dt>
-        <dd class="col-sm-3">${{ (t12.total_cost/100)|round(2) }}</dd>
-      </dl>
-    </div><!-- /card-->
-    </div><!-- /col-->
-
-    <div class="col-sm-4">
-    <div class="card card-block">
-      <h4>Demand Tariff</h4>
-
-      <dl class="row">
-        <dt class="col-sm-9">Meter Services Charge</dt>
-        <dd class="col-sm-3">${{ (t14.meter_services_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Supply Charge</dt>
-        <dd class="col-sm-3">${{ (t14.supply_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Consumption Charge</dt>
-        <dd class="col-sm-3">${{ (t14.consumption_charge/100)|round(2) }}</dd>
-
-        <dt class="col-sm-9">Demand Charge</dt>
-        <dd class="col-sm-3">${{ (t14.demand_charge/100)|round(2) }}</dd>
-
-      </dl>
-      <hr />
-      <dl class="row">
-        <dt class="col-sm-9">Total Cost</dt>
-        <dd class="col-sm-3">${{ (t14.total_cost/100)|round(2) }}</dd>
-      </dl>
-    </div><!-- /card-->
-    </div><!-- /col-->
-
-  </div><!-- /row-->
-
- <div class="row">
-    <div class="col-sm-4">
-    <div class="card card-block">
-    <h4>Consumption Stats</h4>
-    <dl class="row">
-        <dt class="col-sm-6">Peak</dt>
-        <dd class="col-sm-6">{{ t12.peak_consumption_kWh|round(2) }} kWh</dd>
-
-        <dt class="col-sm-6">Off-Peak</dt>
-        <dd class="col-sm-6">{{ t12.offpeak_consumption_kWh|round(2) }} kWh</dd>
-    </dl>
-
-    <dl class="row">
-        <dt class="col-sm-6"># of Days</dt>
-        <dd class="col-sm-6">{{ num_days }}</dd>
-    </dl>
-
-    </div><!-- /card-->
-    </div><!-- /col-->
-
-    <div class="col-sm-4">
-    <div class="card card-block">
-    <h4>Demand Stats</h4>
-    <dl class="row">
-    <dt class="col-sm-6">{% if not t14.peak_season %}Off-{% endif %}Peak Average</dt>
-    <dd class="col-sm-6">{{ (t14.peak_demand_kW)|round(2) }} kW</dd>
-      {% for day in t14.top_four_days %}
-        <dt class="col-sm-6"><em>#{{loop.index}}: {{day}}<em></dt>
-        <dd class="col-sm-6">{{ (t14.peak_days[day][0]/1000)|round(2) }} kW</dd>
-      {% endfor %}
-
-    </dl>
-    </div><!-- /card-->
-    </div><!-- /col-->
-
-</div><!-- /row-->
-
 
 
 
