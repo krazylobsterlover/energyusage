@@ -11,6 +11,7 @@ class Energy(db.Model):
     """
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     reading_date = db.Column(db.DateTime, primary_key=True)
+    interval = db.Column(db.Integer)
     imp = db.Column(db.Integer)
     exp = db.Column(db.Integer)
 

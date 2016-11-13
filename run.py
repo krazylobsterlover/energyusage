@@ -16,11 +16,14 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 
     if not os.path.exists('logs'):
+        logging.info('Creating logs folder')
         os.makedirs('logs')
 
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        logging.info('Creating upload folder')
         os.makedirs(app.config['UPLOAD_FOLDER'])
 
     if not os.path.isfile(app.config['DATABASE']):
+        logging.info('Creating database')
         from energy import db
         db.create_all()

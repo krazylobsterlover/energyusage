@@ -109,7 +109,7 @@ def usage_day():
     # Get user details
     user_id = User.query.filter_by(username=current_user.username).first().id
     first_record, last_record, num_days = get_user_stats(user_id)
-    if num_days < 1:
+    if num_days == 0:
         flash('You need to upload some data before you can chart usage.',
               category='warning')
         return redirect(url_for('manage'))
@@ -251,6 +251,8 @@ def get_user_stats(user_id):
     first_record = arrow.get(first_record)
     last_record = arrow.get(last_record)
     num_days = (last_record - first_record).days
+    if num_days < 1:
+        num_days = (last_record - first_record).seconds * 60 * 60 * 24
     return first_record, last_record, num_days
 
 

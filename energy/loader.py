@@ -40,8 +40,8 @@ def import_meter_data(user_name, file_path):
     failed_records = 0
 
     interval = determine_interval(file_path)
-    if interval not in [10]:
-        msg = 'Average time interval must be 10 minutes, not {}'.format(interval)
+    if interval not in [1, 10, 30]:
+        msg = 'Average time interval must be 1, 10 or 30 minutes, not {}'.format(interval)
         flash(msg,'danger')
         return new_records, skipped_records, failed_records
 
@@ -53,14 +53,20 @@ def import_meter_data(user_name, file_path):
             logging.error(msg)
             failed_records += 1
             continue
-        imp = int(row[1])
-        exp = int(row[2])
+
+        if row[1]:
+            imp = int(row[1])
+
+        if row[2]:
+            exp = int(row[2])
+
         if Energy.query.filter_by(user_id=user.id, reading_date=reading_date).first():
             # Record already exists
             skipped_records += 1
             continue
         else:
-            energy = Energy(user_id=user.id, reading_date=reading_date, imp=imp, exp=exp)
+            energy = Energy(user_id=user.id, reading_date=reading_date,
+                            interval=interval, imp=imp, exp=exp)
             db.session.add(energy)
             new_records += 1
     db.session.commit()
@@ -119,7 +125,10 @@ def load_from_file(file_path):
     with open(file_path, newline='') as csv_file:
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
         h = next(reader, None)  # first row is headings
-        if h[0:3] == ['READING_DATETIME', 'IMP', 'EXP']:
+        VALID_HEADINGS = [['READING_DATETIME', 'IMP'],
+                          ['READING_DATETIME', 'IMP', 'EXP']
+                         ]
+        if h in VALID_HEADINGS:
             for row in reader:
                 yield row
         else:

@@ -26,6 +26,8 @@ class GeneralSupplyTariff(object):
         self.consumption_kWh = 0
         for r in get_energy_data(self.meter_id, start_date, end_date):
             impWh = r.imp
+            if not impWh:  # If null
+                impWh = 0
             self.consumption_kWh += impWh / 1000  # charge is in kWh
         self.consumption_charge = self.consumption_rate * self.consumption_kWh
 
@@ -55,6 +57,8 @@ class TimeofUseTariff(object):
         for r in get_energy_data(self.meter_id, start_date, end_date):
             reading_date = arrow.get(r.reading_date)
             impWh = r.imp
+            if not impWh:  # If null
+                impWh = 0
             if in_peak_period(reading_date):
                 self.peak_consumption_kWh += impWh / 1000  # charge is in kWh
             else:
@@ -88,6 +92,8 @@ class DemandTariff(object):
         self.consumption_kWh = 0
         for r in get_energy_data(self.meter_id, start_date, end_date):
             impWh = r.imp
+            if not impWh:  # If null
+                impWh = 0
             self.consumption_kWh += impWh / 1000  # charge is in kWh
         self.consumption_charge = self.consumption_rate * self.consumption_kWh
 
@@ -211,7 +217,10 @@ def get_power_data(meter_id, start_date, end_date):
     power = {}
     for r in get_energy_data(meter_id, start_date, end_date):
         rd = arrow.get(r.reading_date)
+        interval = r.interval
         imp = r.imp
+        if not imp:  # If null
+            imp = 0
 
         # Round up to nearest 30 min interval
         if rd.minute == 0:
