@@ -1,4 +1,6 @@
 # energyusage
+[![Build Status](https://travis-ci.org/aguinane/energyusage.svg?branch=develop)](https://travis-ci.org/aguinane/energyusage)
+
 Provide analysis and charting of energy usage
 
 To run the website:
