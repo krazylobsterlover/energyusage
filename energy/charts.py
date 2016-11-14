@@ -1,6 +1,6 @@
 import arrow
 from .models import Energy
-from .tariff import get_energy_data, convert_wh_to_w, get_power_data
+from .usage import get_energy_data, convert_wh_to_w, get_power_data
 
 
 def get_energy_chart_data(meter_id, start_date, end_date):
@@ -30,3 +30,4 @@ def get_energy_chart_data(meter_id, start_date, end_date):
         chartdata['power'].append([ts, impW])
 
     return chartdata
+

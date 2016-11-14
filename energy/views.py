@@ -129,7 +129,7 @@ def usage_day():
     period_nav = get_navigation_range('day', rs, first_record, last_record)
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='day')
+    plot_settings = calculate_plot_settings(report_period='day')
 
 
     return render_template('usage_day.html', meter_id = user_id,
@@ -177,7 +177,7 @@ def usage_month():
 
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='month')
+    plot_settings = calculate_plot_settings(report_period='month')
 
 
     return render_template('usage_month.html', meter_id = user_id,
@@ -213,7 +213,7 @@ def usage_all():
     num_days = (re - rs).days
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='month')
+    plot_settings = calculate_plot_settings(report_period='month')
 
 
     return render_template('usage_all.html', meter_id = user_id,
@@ -304,10 +304,10 @@ def get_navigation_range(report_period, rs, first_record, last_record):
     return period_nav
 
 
-def calulate_plot_settings(report_period='day'):
+def calculate_plot_settings(report_period='day', interval=10):
     # Specify chart settings depending on report period
     plot_settings = dict()
-    plot_settings['barWidth'] = 1000 * 60 * 10
+    plot_settings['barWidth'] = 1000 * 60 * interval
     if report_period == 'month':
         plot_settings['minTickSize'] = 'day'
     else:  # Day

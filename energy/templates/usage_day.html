@@ -152,8 +152,8 @@
     <h4>Demand Stats</h4>
     <dl class="row">
       {% for day in t14.top_four_days %}
-        <dt class="col-sm-6"><em>Max 30-min<em></dt>
-        <dd class="col-sm-6">{{ (t14.peak_days[day][0]/1000)|round(2) }} kW</dd>
+        <dt class="col-sm-6"><em>Today<em></dt>
+        <dd class="col-sm-6">{{ (t14.peak_days[day][0]/1000)|round(2) }} | {{ (t14.peak_days[day][1]/1000)|round(2) }} kW</dd>
       {% endfor %}
       <dt class="col-sm-6">{% if not t14.peak_season %}Off-{% endif %}Peak Average</dt>
       <dd class="col-sm-6">{{ (t14.peak_demand_kW)|round(2) }} kW</dd>
