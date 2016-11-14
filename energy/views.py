@@ -7,7 +7,7 @@ from . import app, db
 from .models import User, get_data_range
 from .loader import import_meter_data, export_meter_data
 from .forms import UsernamePasswordForm, FileForm
-from .charts import get_energy_chart_data
+from .charts import get_energy_chart_data, get_daily_chart_data
 from .tariff import GeneralSupplyTariff, TimeofUseTariff, DemandTariff
 import sqlalchemy
 
@@ -129,7 +129,7 @@ def usage_day():
     period_nav = get_navigation_range('day', rs, first_record, last_record)
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='day')
+    plot_settings = calculate_plot_settings(report_period='day')
 
 
     return render_template('usage_day.html', meter_id = user_id,
@@ -177,7 +177,7 @@ def usage_month():
 
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='month')
+    plot_settings = calculate_plot_settings(report_period='month')
 
 
     return render_template('usage_month.html', meter_id = user_id,
@@ -213,7 +213,7 @@ def usage_all():
     num_days = (re - rs).days
 
     t11, t12, t14 = calculate_usage_costs(user_id, rs, re)
-    plot_settings = calulate_plot_settings(report_period='month')
+    plot_settings = calculate_plot_settings(report_period='month')
 
 
     return render_template('usage_all.html', meter_id = user_id,
@@ -241,6 +241,20 @@ def energy_data(meter_id=None):
         start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
         end_date = arrow.get(params['end_date']).datetime
         flotData = get_energy_chart_data(meter_id, start_date, end_date)
+        return jsonify(flotData)
+
+
+@app.route('/daily_data/')
+@app.route('/daily_data/<meter_id>.json', methods=['POST', 'GET'])
+@login_required
+def daily_data(meter_id=None):
+    if meter_id is None:
+        return 'json chart api'
+    else:
+        params = request.args.to_dict()
+        start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
+        end_date = arrow.get(params['end_date']).datetime
+        flotData = get_daily_chart_data(meter_id, start_date, end_date)
         return jsonify(flotData)
 
 
@@ -304,10 +318,10 @@ def get_navigation_range(report_period, rs, first_record, last_record):
     return period_nav
 
 
-def calulate_plot_settings(report_period='day'):
+def calculate_plot_settings(report_period='day', interval=10):
     # Specify chart settings depending on report period
     plot_settings = dict()
-    plot_settings['barWidth'] = 1000 * 60 * 10
+    plot_settings['barWidth'] = 1000 * 60 * interval
     if report_period == 'month':
         plot_settings['minTickSize'] = 'day'
     else:  # Day

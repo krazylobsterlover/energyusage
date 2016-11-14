@@ -3,6 +3,7 @@ flask_wtf
 flask_sqlalchemy
 flask_debugtoolbar
 flask_bcrypt
+flask_login
 arrow
 sqlalchemy
 wtforms
