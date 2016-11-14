@@ -126,7 +126,9 @@ def load_from_file(file_path):
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
         h = next(reader, None)  # first row is headings
         VALID_HEADINGS = [['READING_DATETIME', 'IMP'],
-                          ['READING_DATETIME', 'IMP', 'EXP']
+                          ['READING_DATETIME', 'IMP', 'EXP'],
+                          ['READING_DATETIME', 'IMP', 'EXP', 'STATUS'],
+                          ['READING_DATE', 'IMP', 'EXP']
                          ]
         if h in VALID_HEADINGS:
             for row in reader:
