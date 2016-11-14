@@ -1,6 +1,7 @@
 import arrow
 from .models import Energy
 from .usage import get_energy_data, convert_wh_to_w, get_power_data
+from .tariff import DailyUsage
 
 
 def get_energy_chart_data(meter_id, start_date, end_date):
@@ -31,3 +32,19 @@ def get_energy_chart_data(meter_id, start_date, end_date):
 
     return chartdata
 
+
+def get_daily_chart_data(meter_id, start_date, end_date):
+    """ Return json object for flot chart
+    """
+    chartdata = {}
+    chartdata['label'] = 'Daily Usage'
+    chartdata['consumption'] = []
+
+    du = DailyUsage(meter_id, start_date, end_date)
+    for day in du.daily_usage.keys():
+        dTime = arrow.get(day).replace(days=+1)
+        ts = int(dTime.timestamp * 1000)
+        usage = du.daily_usage[day].consumption_total / 1000
+        chartdata['consumption'].append([ts, usage])
+
+    return chartdata

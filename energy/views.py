@@ -7,7 +7,7 @@ from . import app, db
 from .models import User, get_data_range
 from .loader import import_meter_data, export_meter_data
 from .forms import UsernamePasswordForm, FileForm
-from .charts import get_energy_chart_data
+from .charts import get_energy_chart_data, get_daily_chart_data
 from .tariff import GeneralSupplyTariff, TimeofUseTariff, DemandTariff
 import sqlalchemy
 
@@ -241,6 +241,20 @@ def energy_data(meter_id=None):
         start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
         end_date = arrow.get(params['end_date']).datetime
         flotData = get_energy_chart_data(meter_id, start_date, end_date)
+        return jsonify(flotData)
+
+
+@app.route('/daily_data/')
+@app.route('/daily_data/<meter_id>.json', methods=['POST', 'GET'])
+@login_required
+def daily_data(meter_id=None):
+    if meter_id is None:
+        return 'json chart api'
+    else:
+        params = request.args.to_dict()
+        start_date = arrow.get(params['start_date']).replace(minutes=+10).datetime
+        end_date = arrow.get(params['end_date']).datetime
+        flotData = get_daily_chart_data(meter_id, start_date, end_date)
         return jsonify(flotData)
 
 
