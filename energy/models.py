@@ -30,6 +30,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(64), unique=True)
     _password = db.Column(db.String(128))
+    efergy_token = db.Column(db.String(32))
 
 
     @hybrid_property
@@ -59,6 +60,9 @@ class User(db.Model):
         """False, as anonymous users aren't supported."""
         return False
 
+    def _set_efergy_token(self, token):
+        self.efergy_token = token
 
-
+    def get_efergy_token(self):
+        self.efergy_token
 

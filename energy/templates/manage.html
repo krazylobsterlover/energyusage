@@ -14,46 +14,84 @@
 
 <h1>Manage your meter data</h1>
 
- <div class="row">
-    <div class="col-sm-5">
 
-    <h3>Import</h3>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" href="#tabCSV" role="tab" data-toggle="tab">CSV Import</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#tabEfergy" role="tab" data-toggle="tab">Efergy Engage</a>
+  </li>
+</ul>
 
-    <form method="POST" action="/manage" enctype="multipart/form-data">
+<!-- Tab panes -->
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="tabCSV">
+        <div class="row">
+            <div class="col-sm-5">
 
-        <p class="form-text text-muted">
-            The csv file should be in the following format:
-                <strong>READING_DATETIME, IMP, EXP</strong><br />
-                2016-08-10 13:20:00, 29, 0<br />
-                2016-08-10 13:30:00, 101, 0<br />
-        </p>
+            <h3>Import</h3>
 
-        <div class="form-group">
-            {{ form.upload_file.label }}:
-            {{ form.upload_file(class="form-control") }}
-        </div>
+            <form method="POST" action="/manage" enctype="multipart/form-data">
 
-        <button type="submit" class="btn btn-primary">
-            <i class="fa fa-cloud-upload" aria-hidden="true"></i> Upload
-        </button>
+                <p class="form-text text-muted">
+                    The csv file should be in the following format:
+                        <strong>READING_DATETIME, IMP, EXP</strong><br />
+                        2016-08-10 13:20:00, 29, 0<br />
+                        2016-08-10 13:30:00, 101, 0<br />
+                </p>
 
-    </form>
+                <div class="form-group">
+                    {{ form.upload_file.label }}:
+                    {{ form.upload_file(class="form-control") }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-cloud-upload" aria-hidden="true"></i> Upload
+                </button>
+
+            </form>
 
 
-    </div><!-- /col-->
+            </div><!-- /col-->
 
-    <div class="col-sm-5">
-    <h3>Export</h3>
-    <p>
-    Download all your meter data.
-    </p>
-    <p>
-    <a class="btn btn-primary" href="{{ url_for('export_data') }}" role="button">
-        <i class="fa fa-cloud-download" aria-hidden="true"></i>
-        Download CSV
-    </a>
-    </p>
-    </div><!-- /col-->
-</div><!-- /row-->
+            <div class="col-sm-5">
+            <h3>Export</h3>
+            <p>
+            Download all your meter data.
+            </p>
+            <p>
+            <a class="btn btn-primary" href="{{ url_for('export_data') }}" role="button">
+                <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                Download CSV
+            </a>
+            </p>
+            </div><!-- /col-->
+        </div><!-- /row-->
+    </div><!-- /tab-->
+    <div role="tabpanel" class="tab-pane fade" id="tabEfergy">
+        <form method="POST" action="/manage" enctype="multipart/form-data">
+            <h3>Import from Efergy Engage</h3>
+            <p class="form-text text-muted">
+                This form allows for inporting of data from
+                <a href="https://engage.efergy.com/">Efergy's Engage web platform</a>. To import data you first need to
+                generate and save a unique app token. You can do this by:
+                <ol>
+                    <li>Logging into the <a href="https://engage.efergy.com/user/login">Efergy's Engage web platform</a></li>
+                    <li>Navigating to the <a href="https://engage.efergy.com/settings/tokens">App tokens page</a></li>
+                    <li>Selecting <i>Add Token</i></li>
+                    <li>Copying and pasting the generated token code in the box below and submitting</li>
+                </ol>
+            </p>
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-secondary" type="button">Save</button>
+                </span>
+                <input type="text" class="form-control" placeholder="Efergy Engage Token">
+            </div>
+        </form>
+    </div><!-- /tab-->
+</div>
+
 
 {% endblock %}
